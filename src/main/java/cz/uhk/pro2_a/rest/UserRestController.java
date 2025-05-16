@@ -1,11 +1,12 @@
 package cz.uhk.pro2_a.rest;
 
+import cz.uhk.pro2_a.model.Rating;
 import cz.uhk.pro2_a.model.User;
+import cz.uhk.pro2_a.service.RatingService;
 import cz.uhk.pro2_a.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -13,10 +14,12 @@ import java.util.List;
 public class UserRestController {
 
     private final UserService userService;
+    private final RatingService ratingService;
 
     @Autowired
-    public UserRestController(UserService userService) {
+    public UserRestController(UserService userService, RatingService ratingService) {
         this.userService = userService;
+        this.ratingService = ratingService;
     }
 
     @GetMapping("/getall")
@@ -42,4 +45,8 @@ public class UserRestController {
         return user;
     }
 
+    @GetMapping("/ratings/{id}")
+    public List<Rating> getRatings(@PathVariable long id){
+        return ratingService.getAllRatingsToCourse(id);
+    }
 }
