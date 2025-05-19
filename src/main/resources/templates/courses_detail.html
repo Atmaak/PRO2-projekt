@@ -8,7 +8,7 @@
 <body>
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-row">
-              <a th:href="@{/home}" style="all:unset;cursor:pointer;"><h1 class="">Pro2 projekt Kubjak</h1></a>
+        <a th:href="@{/home}" style="all:unset;cursor:pointer;"><h1 class="">Pro2 projekt Kubjak</h1></a>
 
         <div class="d-flex flex-row gap-5">
             <div class="dropdown">
@@ -29,14 +29,16 @@
     </div>
     <h2 th:text="${course != null ? 'Course: ' + course.name : 'Does not exist.'}"></h2>
     <h4 th:text="${course != null ? 'Lecturer: ' + course.lecturer.name : ''}"></h4>
+    <input type="hidden" id="courseId" th:value="${course != null ? course.id : ''}"/>
     <div th:if="${course != null}">
         <a class="btn btn-primary me-2" th:href="@{'/courses/'+${course.id}+'/edit'}">Edit Course</a>
         <a class="btn btn-danger" th:href="@{'/courses/'+${course.id}+'/delete'}">Delete Course</a>
     </div>
 
-    <!-- Star Rating UI -->
     <div th:if="${course != null}" class="mt-4">
         <h5>Rate this course:</h5>
+        <textarea id="textarea" class="form-control" rows="3" placeholder="Leave a comment here"></textarea>
+        <div class="form-text">Please rate the course from 1 to 5 stars.</div>
         <div id="star-rating" data-course-id="[[${course.id}]]" style="font-size:2rem; cursor:pointer;">
             <span class="star" data-value="1">&#9734;</span>
             <span class="star" data-value="2">&#9734;</span>
@@ -44,17 +46,26 @@
             <span class="star" data-value="4">&#9734;</span>
             <span class="star" data-value="5">&#9734;</span>
         </div>
-        <div id="rating-message" class="mt-2"></div>
+        <!-- <div id="rating-message" class="mt-2"></div> -->
+    </div>
+    <div id="ratings-tab">
+        <h5>All Ratings:</h5>
+        <div id="ratings-list">Loading...</div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Star rating interactivity and AJAX POST
+let hasBeenRated = false
+
 document.addEventListener('DOMContentLoaded', function() {
     const stars = document.querySelectorAll('#star-rating .star');
     const ratingDiv = document.getElementById('star-rating');
-    const courseId = ratingDiv ? ratingDiv.getAttribute('data-course-id') : null;
+    const courseId = document.getElementById('courseId').value;
     const messageDiv = document.getElementById('rating-message');
+    const ratingsTab = document.getElementById('ratings-tab');
+
+    fetchRatings()
+
     let hoverValue = 0;
 
     function highlightStars(val) {
@@ -72,28 +83,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         star.addEventListener('click', function() {
             hoverValue = this.dataset.value;
+            const text = document.getElementById('textarea').value ? document.getElementById('textarea').value : '';
+            console.log(text)
             highlightStars(hoverValue);
-            // Send POST request to save rating
-            fetch('/rating/save', {
+            if (hasBeenRated) return
+            fetch(`/rating/save/${courseId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     courseId: courseId,
-                    stars: hoverValue
+                    stars: hoverValue,
+                    notes: text,
                 })
             })
             .then(res => res.ok ? res.json() : Promise.reject(res))
             .then(data => {
-                messageDiv.textContent = "Thank you for rating!";
-                messageDiv.className = "text-success mt-2";
+                // messageDiv.textContent = "Thank you for rating!";
+                // messageDiv.className = "text-success mt-2";
+                fetchRatings()
             })
             .catch(() => {
-                messageDiv.textContent = "Error saving rating.";
-                messageDiv.className = "text-danger mt-2";
+                // messageDiv.textContent = "Error saving rating.";
+                // messageDiv.className = "text-danger mt-2";
             });
+            // setTimeout(() => {
+            //     fetchRatings()
+            // }, 500);
+            hasBeenRated = true
         });
     });
+
 });
+
+const fetchRatings = () => {
+    const courseId = document.getElementById('courseId').value;
+    const ratingsList = document.getElementById('ratings-list');
+    fetch(`/rating/${courseId}`)
+        .then(res => res.ok ? res.json() : Promise.reject(res))
+        .then(data => {
+            if (data.length === 0) {
+                ratingsList.innerHTML = "<em>No ratings yet.</em>";
+                return;
+            }
+            console.log(data)
+            ratingsList.innerHTML = data.map(r =>
+                `<div class="border rounded p-2 mb-2 text-dark">
+                    <strong>User:</strong> ${r.user.username ? r.user.username : '<em>Unknown</em>'}<br>
+                    <strong>Stars:</strong> ${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}<br>
+                    <strong>Comment:</strong> ${r.notes ? r.notes : '<em>No comment</em>'}
+                </div>`
+            ).join('');
+        })
+        .catch(() => {
+            ratingsList.innerHTML = "<span class='text-danger'>Error loading ratings.</span>";
+        });
+};
+
 </script>
 </body>
 </html>

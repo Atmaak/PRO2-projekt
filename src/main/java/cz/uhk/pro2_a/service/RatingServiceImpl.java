@@ -19,7 +19,7 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public List<Rating> getAllRatingsToCourse(long idCourse) {
-        return ratingRepository.findAll();
+        return ratingRepository.findByCourseId(idCourse);
     }
 
     @Override

@@ -23,6 +23,9 @@ public class MyUserDetails implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
 
+    public User getUser(){
+        return user;
+    }
     @Override
     public String getPassword() {
         return user.getPassword();
@@ -51,5 +54,12 @@ public class MyUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "MyUserDetails{" +
+                "user=" + user +
+                '}';
     }
 }

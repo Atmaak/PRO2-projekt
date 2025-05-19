@@ -1,6 +1,7 @@
 package cz.uhk.pro2_a.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,6 +19,7 @@ public class Rating {
     @ManyToOne
     private User user;
     @ManyToOne
+    @JsonIgnore
     private Course course;
 
     public Course getCourse() {
@@ -58,5 +60,16 @@ public class Rating {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "Rating{" +
+            "id=" + id +
+            ", stars=" + stars +
+            ", notes='" + notes + '\'' +
+            ", user=" + user +
+            ", course=" + course +
+        '}';
     }
 }
