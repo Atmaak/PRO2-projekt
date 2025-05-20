@@ -21,12 +21,6 @@ public class RatingServiceImpl implements RatingService {
     public List<Rating> getAllRatingsToCourse(long idCourse) {
         return ratingRepository.findByCourseId(idCourse);
     }
-
-    @Override
-    public Rating getRating(long id) {
-        return null;
-    }
-
     @Override
     public void saveRating(Rating rating) {
         ratingRepository.save(rating);
@@ -34,6 +28,8 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public Rating deleteRating(long id) {
-        return null;
+        Rating rating = ratingRepository.findById(id).orElse(null);
+        ratingRepository.deleteById(id);
+        return rating;
     }
 }

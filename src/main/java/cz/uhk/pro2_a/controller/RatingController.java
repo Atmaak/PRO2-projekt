@@ -7,6 +7,7 @@ import cz.uhk.pro2_a.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,12 @@ public class RatingController {
         List<Rating> ratings = ratingService.getAllRatingsToCourse(courseId);
         java.util.Collections.reverse(ratings);
         return ratings;
+    }
+
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable long id) {
+        ratingService.deleteRating(id);
+        return "redirect:/courses/";
     }
 
 }
